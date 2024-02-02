@@ -1,0 +1,42 @@
+version: "3"
+services:
+  backend:
+    container_name: ${PROJECT_NAME}-backend
+    restart: always
+    build:
+      context: ./
+      dockerfile: Dockerfile_DEV
+    ports:
+      - 3000:3000
+    volumes:
+      - ./src:/usr/app/src
+      - ./public:/usr/app/public
+
+  mongo:
+    image: mongo:6.0.5
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    volumes:
+      - ./data_db:/data/db
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    env_file:
+      - .env
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${DB_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${DB_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+    depends_on:
+      - mongo
